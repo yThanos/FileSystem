@@ -6,9 +6,21 @@ import java.io.RandomAccessFile;
 import lombok.SneakyThrows;
 
 public class Disk {
+    /**
+     * Nome do arquivo que simula o disco.
+     */
     private static final String ARCHIVE_NAME = "fat32.data";
+    /**
+     * Número de blocos no disco.
+     */
     public static final int BLOCKS_NUM = 16 * 1024;
+    /**
+     * Tamanho de cada bloco.
+     */
     private static final int BLOCk_SIZE = 64 * 1024;
+    /**
+     * Arquivo que simula o disco.
+     */
     private RandomAccessFile disk;
 
     @SneakyThrows
@@ -18,6 +30,11 @@ public class Disk {
         this.disk.setLength(BLOCKS_NUM * BLOCk_SIZE);
     }
 
+    /**
+     * Lê um bloco do disco.
+     * @param block número do bloco a ser lido.
+     * @return byte array com os dados do bloco.
+     */
     public byte[] read(int block){
         if(block < 0 || block >= BLOCKS_NUM){
             throw new IllegalArgumentException("Invalid block number");
@@ -32,6 +49,11 @@ public class Disk {
         return data;
     }
 
+    /**
+     * Escreve um bloco no disco.
+     * @param block número do bloco a ser escrito.
+     * @param data byte array dados a serem escritos.
+     */
     public void write(int block, byte[] data){
         if(block < 0 || block >= BLOCKS_NUM){
             throw new IllegalArgumentException("Invalid block number");
