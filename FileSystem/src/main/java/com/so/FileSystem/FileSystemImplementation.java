@@ -1,5 +1,6 @@
 package com.so.FileSystem;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class FileSystemImplementation implements FileSystem {
     /**
      * Mapa de alocação de arquivos, dizendo aonde estão os arquivos no disco.
      */
-    private Map<Integer, Integer> FAT = new HashMap<>(Disk.BLOCKS_NUM);
+    private List<Integer> FAT = new ArrayList<>(Disk.BLOCKS_NUM);
 
     /**
      * Construtor do sistema de arquivos, inicializa o disco e carrega os arquivos do bloco 0.
@@ -48,11 +49,18 @@ public class FileSystemImplementation implements FileSystem {
     public byte[] read(String fileName, int offset, int limit) {
         for(Archive archive : this.archives){
             if(archive.getName().equals(fileName)){
-                byte[] data;
                 int nextBlock = archive.getPos();
+                int blocks = 0;
+                do {
+                    blocks ++;
+                    nextBlock = FAT.get(nextBlock);
+                } while(nextBlock != 0);
+                byte[] data = new byte[blocks * Disk.BLOCk_SIZE];
+                int destPos = 0;
                 do{
-                    data = disk.read(nextBlock);
-                    //faz algo com os dados
+                    byte[] parteArchive = disk.read(nextBlock);
+                    System.arraycopy(parteArchive, 0, data, destPos, parteArchive.length);
+                    destPos += Disk.BLOCk_SIZE;
                     nextBlock = FAT.get(nextBlock);
                 } while(nextBlock != 0);
                 return data;
@@ -63,12 +71,28 @@ public class FileSystemImplementation implements FileSystem {
 
     @Override
     public void remove(String fileName) {
-
+        for(Archive archive : this.archives){
+            if(archive.getName().equals(fileName)) {
+                int nextBlock = archive.getPos();
+                do {
+                    int current = nextBlock;
+                    nextBlock = FAT.get(nextBlock);
+                    FAT.remove(current);
+                } while(nextBlock != 0);
+                archives.remove(archive);
+            }
+        }
     }
 
     @Override
     public int freeSpace() {
-        return 0;
+        int free = 0;
+        for(Integer block: FAT){
+            if(block == null){
+                free ++;
+            }
+        }
+        return free;
     }
     
 }

@@ -17,11 +17,11 @@ public class Disk {
     /**
      * Tamanho de cada bloco.
      */
-    private static final int BLOCk_SIZE = 64 * 1024;
+    public static final int BLOCk_SIZE = 64 * 1024;
     /**
      * Arquivo que simula o disco.
      */
-    private RandomAccessFile disk;
+    private final RandomAccessFile disk;
 
     @SneakyThrows
     public Disk(){
