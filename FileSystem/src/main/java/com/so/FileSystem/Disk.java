@@ -37,7 +37,7 @@ public class Disk {
      */
     public byte[] read(int block){
         if(block < 0 || block >= BLOCKS_NUM){
-            throw new IllegalArgumentException("Invalid block number");
+            throw new IllegalArgumentException("[DISK.read] Invalid block number");
         }
         byte[] data = new byte[BLOCk_SIZE];
         try {
@@ -56,7 +56,7 @@ public class Disk {
      */
     public void write(int block, byte[] data){
         if(block < 0 || block >= BLOCKS_NUM){
-            throw new IllegalArgumentException("Invalid block number");
+            throw new IllegalArgumentException("[DISK.write] Invalid block number");
         }
         if(data.length > BLOCk_SIZE){
             throw new IllegalArgumentException("Data is too big");

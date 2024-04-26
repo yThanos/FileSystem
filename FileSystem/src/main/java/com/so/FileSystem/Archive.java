@@ -43,9 +43,10 @@ public class Archive {
         }
         this.size = size;
         this.pos = pos;
-        if(this.pos < 2 || this.pos >=  Disk.BLOCKS_NUM){
-            throw new IllegalArgumentException("Invalid block number");
-        }
+        System.out.println("[ARCHIVE] " + this.name);
+        System.out.println("[ARCHIVE] " + this.ext);
+        System.out.println("[ARCHIVE] " + this.size);
+        System.out.println("[ARCHIVE] " + this.pos);
     }
 
     /**
@@ -66,7 +67,7 @@ public class Archive {
      * @param i inteiro a ser convertido.
      * @return array de bytes.
      */
-    private byte[] intToBytes(int i){
+    public static byte[] intToBytes(int i){
         ByteBuffer bb = ByteBuffer.allocate(4);
         bb.putInt(i);
         return bb.array();
@@ -83,12 +84,6 @@ public class Archive {
         int size = ByteBuffer.wrap(data, 11, 4).getInt();
         int pos = ByteBuffer.wrap(data, 15, 4).getInt();
         return new Archive(name, ext, size, pos);
-    }
-
-    public static void main(String[] args) {
-        Archive a = new Archive("teste", "txt", 10, 2);
-        byte[] bytes = a.toByteArray();
-        System.out.println(Archive.fromByteArray(bytes));
     }
 
 }
