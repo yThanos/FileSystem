@@ -20,7 +20,7 @@ public class FileSystemImplementation implements FileSystem {
     private List<Integer> FAT = new ArrayList<>(Disk.BLOCKS_NUM);
 
     /**
-     * Construtor do sistema de arquivos, inicializa o disco e carrega os arquivos do bloco 0.
+     * Construtor do sistema de arquivos, inicializa o disco e carrega os arquivos do bloco 0 e 1.
      */
     public FileSystemImplementation() {
         this.disk = new Disk();//inicializa o disco
