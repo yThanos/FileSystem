@@ -48,10 +48,6 @@ public class FileSystemImplementation implements FileSystem {
 
     @Override
     public void create(String fileName, byte[] data) {
-        if (data.length > Disk.BLOCk_SIZE) {//checa se tem espaço suficiente para o arquivo
-            throw new IllegalArgumentException("[FSI.create] No free space");
-        }
-
         for(Archive archive : this.archives){//checa se ja tem um arquivo com esse nome, talvez de pra simplente sobreescrever
             if(archive.getName().equals(fileName)){
                 throw new IllegalArgumentException("[FSI.create] File already exists");
@@ -59,6 +55,7 @@ public class FileSystemImplementation implements FileSystem {
         }
 
         int nextBlock = nextFreeBlock();//pega o proximo bloco livre
+        FAT.set(nextBlock, 1);//seta o proximo bloco como -1 pq é o ultimo bloco
         System.out.println("[FSI.create] Next block: " + nextBlock);
         int dataPos = 0;//posição do dado no array de dados
 
@@ -68,11 +65,21 @@ public class FileSystemImplementation implements FileSystem {
         System.out.println(archives);
         //System.out.println(FAT);
 
+        int length = data.length;//tamanho do array de dados
+
         do{
+            System.out.println("[FSI.create] Writing block: " + nextBlock);
             byte[] parteData = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
-            System.arraycopy(data, dataPos, parteData, 0, data.length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : data.length);//copia os dados do array de dados para o array de bytes
+            System.arraycopy(data, dataPos, parteData, 0, length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : length);//copia os dados do array de dados para o array de bytes
+
+            System.out.println("[FSI.create] Data length: " + length);
+            
             disk.write(nextBlock, parteData);//escreve o bloco
+
             dataPos += Disk.BLOCk_SIZE;//atualiza a posição do dado no array de dados
+            
+            length -= Disk.BLOCk_SIZE;//atualiza o tamanho do array de dados
+
             int current = nextBlock;//salva o bloco atual
 
             if(dataPos >= data.length){//se o acabou de gravar tudo
@@ -96,6 +103,13 @@ public class FileSystemImplementation implements FileSystem {
     //ToDo: ler na FAT o bloco inicial, e ir lendo os blocos seguintes. pedir pro rafael o que é o offset e o limit exatamente e ver se faz sentido
     @Override
     public byte[] read(String fileName, int offset, int limit) {
+        if(fileName.length() > 8){
+            fileName = fileName.substring(0, 8);
+        } else if (fileName.length() < 8){
+            do{
+                fileName += " ";
+            } while(fileName.length() < 8);
+        }
         for(Archive archive : this.archives){//procura o arquivo
             if(archive.getName().equals(fileName)){
                 System.out.println("[FSI.read] Archive found: " + archive.getName());

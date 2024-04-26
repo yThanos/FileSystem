@@ -43,10 +43,6 @@ public class Archive {
         }
         this.size = size;
         this.pos = pos;
-        System.out.println("[ARCHIVE] " + this.name);
-        System.out.println("[ARCHIVE] " + this.ext);
-        System.out.println("[ARCHIVE] " + this.size);
-        System.out.println("[ARCHIVE] " + this.pos);
     }
 
     /**
