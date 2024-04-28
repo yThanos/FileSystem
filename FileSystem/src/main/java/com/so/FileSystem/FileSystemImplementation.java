@@ -48,9 +48,6 @@ public class FileSystemImplementation implements FileSystem {
 
         this.FAT = bytesToFat(bytesFat);//converte o array de bytes para uma lista de inteiros
 
-        for(int i = 0; i < 2000; i ++){
-            System.out.print(FAT.get(i) + " ");
-        }
     }
 
     @Override
@@ -102,9 +99,6 @@ public class FileSystemImplementation implements FileSystem {
 
         updateFat();//atualiza a FAT
         
-        for(int i = 0; i < 150; i ++){
-            System.out.print(FAT.get(i) + " ");
-        }
     }
 
     @Override
@@ -118,36 +112,45 @@ public class FileSystemImplementation implements FileSystem {
                     currentBlock = FAT.get(currentBlock);
                 } while(FAT.get(currentBlock) > 1);
 
-                int length = data.length;//tamanho do array de dados
+                int lastLength = archive.getSize() % Disk.BLOCk_SIZE;//tamanho do ultimo bloco
+                byte[] lastBlock = disk.read(currentBlock);//lê o ultimo bloco
+                byte[] newBlock = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
+                System.arraycopy(lastBlock, 0, newBlock, 0, lastLength);//copia o ultimo bloco para o novo bloco
+                System.arraycopy(data, 0, newBlock, lastLength, (Disk.BLOCk_SIZE - lastLength) > data.length ? data.length : (Disk.BLOCk_SIZE - lastLength));//copia os dados do array de dados para o novo bloco
+                disk.write(currentBlock, newBlock);
+
+                int length = data.length - (Disk.BLOCk_SIZE - lastLength);//tamanho do array de dados
 
                 int nextBlock = nextFreeBlock();//pega o proximo bloco livre
                 int dataPos = 0;//posição do dado no array de dados
 
-                do{
-                    FAT.set(nextBlock, 69);
-
-                    System.out.println("[FSI.create] Writing block: " + nextBlock);
-                    byte[] parteData = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
-                    System.arraycopy(data, dataPos, parteData, 0, length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : length);//copia os dados do array de dados para o array de bytes
-        
-                    System.out.println("[FSI.create] Data remaining length: " + length);
-                    
-                    disk.write(nextBlock, parteData);//escreve o bloco
-        
-                    dataPos += Disk.BLOCk_SIZE;//atualiza a posição do dado no array de dados
-                    
-                    length -= Disk.BLOCk_SIZE;//atualiza o tamanho do array de dados
-        
-                    int current = nextBlock;//salva o bloco atual
-        
-                    if(dataPos >= data.length){//se o acabou de gravar tudo
-                        nextBlock = 1;//o proximo bloco é -1
-                    } else {
-                        nextBlock = nextFreeBlock();//pega o proximo bloco livre
-                    }
-        
-                    FAT.set(current, nextBlock);//atualiza o bloco atual com o valor do proximo bloco
-                } while(dataPos < data.length);//repete até acabar gravar tudo
+                if(length > 0){
+                    do{
+                        FAT.set(nextBlock, 69);
+    
+                        System.out.println("[FSI.create] Writing block: " + nextBlock);
+                        byte[] parteData = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
+                        System.arraycopy(data, dataPos, parteData, 0, length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : length);//copia os dados do array de dados para o array de bytes
+            
+                        System.out.println("[FSI.create] Data remaining length: " + length);
+                        
+                        disk.write(nextBlock, parteData);//escreve o bloco
+            
+                        dataPos += Disk.BLOCk_SIZE;//atualiza a posição do dado no array de dados
+                        
+                        length -= Disk.BLOCk_SIZE;//atualiza o tamanho do array de dados
+            
+                        int current = nextBlock;//salva o bloco atual
+            
+                        if(length < 1){//se o acabou de gravar tudo
+                            nextBlock = 1;//o proximo bloco é -1
+                        } else {
+                            nextBlock = nextFreeBlock();//pega o proximo bloco livre
+                        }
+            
+                        FAT.set(current, nextBlock);//atualiza o bloco atual com o valor do proximo bloco
+                    } while(length > 0);//repete até acabar gravar tudo
+                }
                 archive.setSize(archive.getSize() + data.length);//atualiza o tamanho do arquivo
                 updateFat();//atualiza a FAT
                 updateIndex();//atualiza o bloco 0
@@ -181,9 +184,6 @@ public class FileSystemImplementation implements FileSystem {
                 } while(currentBlock > 1);//repete até acabar os blocos
                 System.out.println(data.length);
                 
-                for(int i = 0; i < 2000; i ++){
-                    System.out.print(FAT.get(i) + " ");
-                }
                 return data;
             }
         }
@@ -197,8 +197,8 @@ public class FileSystemImplementation implements FileSystem {
             if(archive.getName().equals(fileName)) {
                 int nextBlock = archive.getPos();//pega o bloco inicial do arquivo
                 do {
+                    System.out.println("[FSI.remove] Removing block: " + nextBlock);
                     Integer current = nextBlock;//salva o bloco atual
-                    System.out.println("[FSI.remove] Removing block: " + current);
                     FAT.set(current, 0);//remove o bloco atual
                     nextBlock = FAT.get(current);//pega o proximo bloco
                 } while(nextBlock > 1);//se o proximo bloco for -1 acabou
