@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileSystemImplementation implements FileSystem {
+
     /**
      * Instancia de Disco a ser usada pelo sistema de arquivos para gerenciar os arquivos.
      */
@@ -40,14 +41,21 @@ public class FileSystemImplementation implements FileSystem {
                 break;//se der erro provalvemente tentou transofrmar em arquivo onde não tinha mais nada entao para
             }
         }
-        //vou ter que fazer um for para preencher a FAT com os valores do bloco 1
+        
+        System.out.println(this.archives);
+
         byte[] bytesFat = this.disk.read(1);//lê o bloco 1 aonde tem a FAT
 
         this.FAT = bytesToFat(bytesFat);//converte o array de bytes para uma lista de inteiros
+
+        for(int i = 0; i < 2000; i ++){
+            System.out.print(FAT.get(i) + " ");
+        }
     }
 
     @Override
     public void create(String fileName, byte[] data) {
+        fileName = formatFileName(fileName);//formata o nome do arquivo
         for(Archive archive : this.archives){//checa se ja tem um arquivo com esse nome, talvez de pra simplente sobreescrever
             if(archive.getName().equals(fileName)){
                 throw new IllegalArgumentException("[FSI.create] File already exists");
@@ -55,68 +63,109 @@ public class FileSystemImplementation implements FileSystem {
         }
 
         int nextBlock = nextFreeBlock();//pega o proximo bloco livre
-        FAT.set(nextBlock, 1);//seta o proximo bloco como -1 pq é o ultimo bloco
+        int length = data.length;//tamanho do array de dados
+        
         System.out.println("[FSI.create] Next block: " + nextBlock);
-        int dataPos = 0;//posição do dado no array de dados
 
-        archives.add(new Archive(fileName, "txt",  data.length, nextBlock));//adiciona o arquivo na lista de arquivos
+        archives.add(new Archive(fileName, "txt",  length, nextBlock));//adiciona o arquivo na lista de arquivos
         updateIndex();//atualiza o bloco 0 com a nova lista de arquivos
 
         System.out.println(archives);
-        //System.out.println(FAT);
 
-        int length = data.length;//tamanho do array de dados
+        int dataPos = 0;//posição do dado no array de dados
 
         do{
+            FAT.set(nextBlock, 69);//preenche com qualquer coisa para não pegar o mesmo bloco na proxima vez
+
             System.out.println("[FSI.create] Writing block: " + nextBlock);
+            System.out.println("[FSI.create] Data remaining length: " + length);
+            System.out.println("[FSI.create] Disk size: " + (dataPos + Disk.BLOCk_SIZE));
+
             byte[] parteData = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
             System.arraycopy(data, dataPos, parteData, 0, length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : length);//copia os dados do array de dados para o array de bytes
-
-            System.out.println("[FSI.create] Data length: " + length);
             
             disk.write(nextBlock, parteData);//escreve o bloco
-
-            dataPos += Disk.BLOCk_SIZE;//atualiza a posição do dado no array de dados
             
             length -= Disk.BLOCk_SIZE;//atualiza o tamanho do array de dados
+            dataPos += Disk.BLOCk_SIZE;//atualiza a posição do dado no array de dados
 
             int current = nextBlock;//salva o bloco atual
 
-            if(dataPos >= data.length){//se o acabou de gravar tudo
-                nextBlock = -1;//o proximo bloco é -1
+            if(length < 0){//se o acabou de gravar tudo
+                nextBlock = 1;//o proximo bloco é -1
             } else {
                 nextBlock = nextFreeBlock();//pega o proximo bloco livre
             }
-
             FAT.set(current, nextBlock);//atualiza o bloco atual com o valor do proximo bloco
+
         } while(dataPos < data.length);//repete até acabar gravar tudo
 
         updateFat();//atualiza a FAT
-
+        
+        for(int i = 0; i < 150; i ++){
+            System.out.print(FAT.get(i) + " ");
+        }
     }
 
     @Override
     public void append(String fileName, byte[] data) {
+        fileName = formatFileName(fileName);//formata o nome do arquivo
+        for(Archive archive : this.archives){//procura o arquivo
+            if(archive.getName().equals(fileName)){
+                int currentBlock = archive.getPos();//pega o bloco inicial do arquivo
+                
+                do {//pega o ultimo bloco
+                    currentBlock = FAT.get(currentBlock);
+                } while(FAT.get(currentBlock) > 1);
 
+                int length = data.length;//tamanho do array de dados
+
+                int nextBlock = nextFreeBlock();//pega o proximo bloco livre
+                int dataPos = 0;//posição do dado no array de dados
+
+                do{
+                    FAT.set(nextBlock, 69);
+
+                    System.out.println("[FSI.create] Writing block: " + nextBlock);
+                    byte[] parteData = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
+                    System.arraycopy(data, dataPos, parteData, 0, length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : length);//copia os dados do array de dados para o array de bytes
+        
+                    System.out.println("[FSI.create] Data remaining length: " + length);
+                    
+                    disk.write(nextBlock, parteData);//escreve o bloco
+        
+                    dataPos += Disk.BLOCk_SIZE;//atualiza a posição do dado no array de dados
+                    
+                    length -= Disk.BLOCk_SIZE;//atualiza o tamanho do array de dados
+        
+                    int current = nextBlock;//salva o bloco atual
+        
+                    if(dataPos >= data.length){//se o acabou de gravar tudo
+                        nextBlock = 1;//o proximo bloco é -1
+                    } else {
+                        nextBlock = nextFreeBlock();//pega o proximo bloco livre
+                    }
+        
+                    FAT.set(current, nextBlock);//atualiza o bloco atual com o valor do proximo bloco
+                } while(dataPos < data.length);//repete até acabar gravar tudo
+                archive.setSize(archive.getSize() + data.length);//atualiza o tamanho do arquivo
+                updateFat();//atualiza a FAT
+                updateIndex();//atualiza o bloco 0
+            }
+        }
     }
 
-    //ToDo: ler na FAT o bloco inicial, e ir lendo os blocos seguintes. pedir pro rafael o que é o offset e o limit exatamente e ver se faz sentido
+    
     @Override
     public byte[] read(String fileName, int offset, int limit) {
-        if(fileName.length() > 8){
-            fileName = fileName.substring(0, 8);
-        } else if (fileName.length() < 8){
-            do{
-                fileName += " ";
-            } while(fileName.length() < 8);
-        }
+        fileName = formatFileName(fileName);//formata o nome do arquivo
         for(Archive archive : this.archives){//procura o arquivo
             if(archive.getName().equals(fileName)){
                 System.out.println("[FSI.read] Archive found: " + archive.getName());
                 int nextBlock = archive.getPos();//pega o bloco inicial do arquivo
                 int currentBlock = nextBlock;
                 int blocks = 0;//contador de blocos
-                while(nextBlock != -1) {
+                while(nextBlock > 1) {
                     blocks ++;//incrementa o contador de blocos
                     nextBlock = FAT.get(nextBlock);//pega o proximo bloco
                 } ;//repete até acabar os blocos
@@ -124,13 +173,17 @@ public class FileSystemImplementation implements FileSystem {
                 byte[] data = new byte[blocks * Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho total dos blocos
                 int destPos = 0;//posição de destino no array de bytes
                 do{
-                    System.out.println("[FSI.read] Reading block: " + currentBlock);
+                    //System.out.println("[FSI.read] Reading block: " + nextBlock);
                     byte[] parteArchive = disk.read(currentBlock);//lê o bloco
                     System.arraycopy(parteArchive, 0, data, destPos, parteArchive.length);//copia o bloco para o array de bytes
                     destPos += Disk.BLOCk_SIZE;//atualiza a posição de destino
                     currentBlock = FAT.get(currentBlock);//pega o proximo bloco
-                } while(currentBlock != -1);//repete até acabar os blocos
+                } while(currentBlock > 1);//repete até acabar os blocos
                 System.out.println(data.length);
+                
+                for(int i = 0; i < 2000; i ++){
+                    System.out.print(FAT.get(i) + " ");
+                }
                 return data;
             }
         }
@@ -138,20 +191,25 @@ public class FileSystemImplementation implements FileSystem {
     }
 
     @Override
-    public void remove(String fileName) {
+    public void remove(String fileName) {//acho que é só remover do bloco 0 e do bloco 1, os dados no arquivo em si, podem ficar perdidos e depois são sobreescritos
+        fileName = formatFileName(fileName);//formata o nome do arquivo
         for(Archive archive : this.archives){
             if(archive.getName().equals(fileName)) {
                 int nextBlock = archive.getPos();//pega o bloco inicial do arquivo
                 do {
                     Integer current = nextBlock;//salva o bloco atual
-                    FAT.set(current, null);//remove o bloco atual
+                    System.out.println("[FSI.remove] Removing block: " + current);
+                    FAT.set(current, 0);//remove o bloco atual
                     nextBlock = FAT.get(current);//pega o proximo bloco
-                } while(nextBlock != -1);//se o proximo bloco for -1 acabou
+                } while(nextBlock > 1);//se o proximo bloco for -1 acabou
                 archives.remove(archive);//Como remove o arquivo do bloco 0?, n sei a posição exata do arquivo no bloco 0, ou sei?, pelo nome?
                 updateIndex();//atualiza o bloco 0
                 updateFat();//atualiza a bloco 1
+                return;
             }
         }
+        
+        System.out.println("[FSI.remove] File not found");
     }
 
     @Override
@@ -167,7 +225,8 @@ public class FileSystemImplementation implements FileSystem {
 
     private int nextFreeBlock(){
         for(int i = 2; i < Disk.BLOCKS_NUM; i++){// começa do 2 pq o 0 e o 1 são reservados 0 indices e 1 FAT
-            if(FAT.get(i) == null || FAT.get(i) == 0){//se o bloco for nulo significa que está livre
+            if(FAT.get(i) == 0){//se o bloco for nulo significa que está livre
+                System.out.println("[FSI.nextFreeBlock] Free block: " + i);
                 return i;
             }
         }
@@ -190,24 +249,49 @@ public class FileSystemImplementation implements FileSystem {
         disk.write(1, fatBytes);//escreve a FAT no bloco 1
     }
 
+    /**
+     * codigo do GPT, works
+     * @return array de bytes da FAT
+     */
     private byte[] fatToBytes() {
-        byte[] byteArray = new byte[FAT.size()];//cria um array de bytes com o tamanho da FAT
+        byte[] byteArray = new byte[FAT.size() * Integer.BYTES];
         for (int i = 0; i < FAT.size(); i++) {
-            byteArray[i] = FAT.get(i).byteValue();//converte a lista de inteiros para um array de bytes
+            int value = FAT.get(i);
+            byteArray[i * Integer.BYTES] = (byte) ((value >> 24) & 0xFF);
+            byteArray[i * Integer.BYTES + 1] = (byte) ((value >> 16) & 0xFF);
+            byteArray[i * Integer.BYTES + 2] = (byte) ((value >> 8) & 0xFF);
+            byteArray[i * Integer.BYTES + 3] = (byte) (value & 0xFF);
         }
         return byteArray;
     }
     
+    /**
+     * codigo do gpt, works
+     * @param byteArray array de bytes da FAT
+     * @return lista de inteiros da FAT
+     */
     private List<Integer> bytesToFat(byte[] byteArray) {
-        List<Integer> integerList = new ArrayList<>();//cria uma lista de inteiros
-        for (byte b : byteArray) {
-            try {
-                integerList.add((int) b);//converte o array de bytes para uma lista de inteiros
-            } catch (Exception e) {
-                e.printStackTrace();
-                break;//se der erro para
-            }
+        List<Integer> integerList = new ArrayList<>();
+        for (int i = 0; i < byteArray.length; i += Integer.BYTES) {
+            int value = 0;
+            value |= (byteArray[i] & 0xFF) << 24;
+            value |= (byteArray[i + 1] & 0xFF) << 16;
+            value |= (byteArray[i + 2] & 0xFF) << 8;
+            value |= (byteArray[i + 3] & 0xFF);
+            integerList.add(value);
         }
         return integerList;
+    }
+
+    
+    private String formatFileName(String fileName) {
+        if(fileName.length() > 8){
+            fileName = fileName.substring(0, 8);
+        } else if (fileName.length() < 8){
+            do{
+                fileName += " ";
+            } while(fileName.length() < 8);
+        }
+        return fileName;
     }
 }

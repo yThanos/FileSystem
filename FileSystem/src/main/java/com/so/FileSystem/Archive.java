@@ -63,7 +63,7 @@ public class Archive {
      * @param i inteiro a ser convertido.
      * @return array de bytes.
      */
-    public static byte[] intToBytes(int i){
+    private static byte[] intToBytes(int i){
         ByteBuffer bb = ByteBuffer.allocate(4);
         bb.putInt(i);
         return bb.array();
