@@ -107,10 +107,10 @@ public class FileSystemImplementation implements FileSystem {
         for(Archive archive : this.archives){//procura o arquivo
             if(archive.getName().equals(fileName)){
                 int currentBlock = archive.getPos();//pega o bloco inicial do arquivo
-                
+                int nextBlock = currentBlock;
                 do {//pega o ultimo bloco
-                    currentBlock = FAT.get(currentBlock);
-                } while(FAT.get(currentBlock) > 1);
+                    nextBlock = FAT.get(nextBlock);
+                } while(FAT.get(nextBlock) > 1);
 
                 int lastLength = archive.getSize() % Disk.BLOCk_SIZE;//tamanho do ultimo bloco
                 byte[] lastBlock = disk.read(currentBlock);//lê o ultimo bloco
@@ -121,7 +121,7 @@ public class FileSystemImplementation implements FileSystem {
 
                 int length = data.length - (Disk.BLOCk_SIZE - lastLength);//tamanho do array de dados
 
-                int nextBlock = nextFreeBlock();//pega o proximo bloco livre
+                nextBlock = nextFreeBlock();//pega o proximo bloco livre
                 int dataPos = 0;//posição do dado no array de dados
 
                 if(length > 0){
@@ -312,7 +312,7 @@ public class FileSystemImplementation implements FileSystem {
         System.out.println("[FSI.read2] Reading file: " + fileName);
         for(Archive archive : this.archives){//procura o arquivo
             if(archive.getName().equals(fileName)){
-                System.out.println("[FSI.read2] Archive found: " + archive.getName());
+                System.out.println("[FSI.read2] Archive found: " + archive);
                 if(offset > archive.getSize() || limit > archive.getSize()){//se o offset for maior que o tamanho do arquivo retorna null
                     return null;
                 }
@@ -336,14 +336,14 @@ public class FileSystemImplementation implements FileSystem {
 
                 System.out.println("\n[FSI.read2] Blocks: " + blocos);
 
-                int initialBlock = (int) Math.floor(offset / Disk.BLOCk_SIZE);//bloco inicial
-                int initialOffset = (int) Math.floor(offset % Disk.BLOCk_SIZE);//resto do bloco inicial
+                int initialBlock = blocos.get((int) Math.floor(offset / Disk.BLOCk_SIZE));//bloco inicial
+                int initialOffset = offset % Disk.BLOCk_SIZE;//resto do bloco inicial
 
                 System.out.println("[FSI.read2] Initial block: " + initialBlock);
                 System.out.println("[FSI.read2] Initial offset: " + initialOffset);
 
-                int finalBlock = (int) Math.floor(limit / Disk.BLOCk_SIZE);//bloco final
-                int finalOffset = (int) Math.floor(limit % Disk.BLOCk_SIZE);//resto do bloco final
+                int finalBlock = blocos.get((int) Math.floor(limit / Disk.BLOCk_SIZE));//bloco final
+                int finalOffset = limit % Disk.BLOCk_SIZE;//resto do bloco final
 
                 System.out.println("[FSI.read2] Final block: " + finalBlock);
                 System.out.println("[FSI.read2] Final offset: " + finalOffset);

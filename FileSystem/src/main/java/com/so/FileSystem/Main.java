@@ -26,7 +26,7 @@ public class Main {
         System.out.println("file created");
 
         //System.out.println("appending file...");
-        //fileSystem.append(fileName, data);
+        fileSystem.append("teste", " Kappa texto de teste para append".getBytes());
         //System.out.println("file appended");
 
         System.out.println("reading file...");
