@@ -106,9 +106,11 @@ public class FileSystemImplementation implements FileSystem {
         fileName = formatFileName(fileName);//formata o nome do arquivo
         for(Archive archive : this.archives){//procura o arquivo
             if(archive.getName().equals(fileName)){
-                int currentBlock = archive.getPos();//pega o bloco inicial do arquivo
-                int nextBlock = currentBlock;
+                int firstBlock = archive.getPos();//pega o bloco inicial do arquivo
+                int currentBlock = firstBlock;
+                int nextBlock = firstBlock;
                 do {//pega o ultimo bloco
+                    currentBlock = nextBlock;
                     nextBlock = FAT.get(nextBlock);
                 } while(FAT.get(nextBlock) > 1);
 
@@ -125,14 +127,15 @@ public class FileSystemImplementation implements FileSystem {
                 int dataPos = 0;//posição do dado no array de dados
 
                 if(length > 0){
+                    FAT.set(currentBlock, nextBlock);//atualiza o bloco atual com o valor do proximo bloco
                     do{
                         FAT.set(nextBlock, 69);
     
-                        System.out.println("[FSI.create] Writing block: " + nextBlock);
+                        System.out.println("[FSI.append] Writing block: " + nextBlock);
                         byte[] parteData = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
                         System.arraycopy(data, dataPos, parteData, 0, length > Disk.BLOCk_SIZE ? Disk.BLOCk_SIZE : length);//copia os dados do array de dados para o array de bytes
             
-                        System.out.println("[FSI.create] Data remaining length: " + length);
+                        System.out.println("[FSI.append] Data remaining length: " + length);
                         
                         disk.write(nextBlock, parteData);//escreve o bloco
             
