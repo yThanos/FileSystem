@@ -89,7 +89,7 @@ public class FileSystemImplementation implements FileSystem {
             int current = nextBlock;//salva o bloco atual
 
             if(length < 0){//se o acabou de gravar tudo
-                nextBlock = 1;//o proximo bloco é -1
+                nextBlock = 1;//o proximo bloco é 1
             } else {
                 nextBlock = nextFreeBlock();//pega o proximo bloco livre
             }
@@ -143,7 +143,7 @@ public class FileSystemImplementation implements FileSystem {
                         int current = nextBlock;//salva o bloco atual
             
                         if(length < 1){//se o acabou de gravar tudo
-                            nextBlock = 1;//o proximo bloco é -1
+                            nextBlock = 1;//o proximo bloco é 1
                         } else {
                             nextBlock = nextFreeBlock();//pega o proximo bloco livre
                         }
@@ -201,7 +201,7 @@ public class FileSystemImplementation implements FileSystem {
                     Integer current = nextBlock;//salva o bloco atual
                     FAT.set(current, 0);//remove o bloco atual
                     nextBlock = FAT.get(current);//pega o proximo bloco
-                } while(nextBlock > 1);//se o proximo bloco for -1 acabou
+                } while(nextBlock > 1);//se o proximo bloco for 1 acabou
                 archives.remove(archive);//Como remove o arquivo do bloco 0?, n sei a posição exata do arquivo no bloco 0, ou sei?, pelo nome?
                 updateIndex();//atualiza o bloco 0
                 updateFat();//atualiza a bloco 1
@@ -283,7 +283,11 @@ public class FileSystemImplementation implements FileSystem {
         return integerList;
     }
 
-    
+    /**
+     * Formata o nome do arquivo para 8 bytes
+     * @param fileName nome do arquivo
+     * @return nome do arquivo formatado
+     */
     private String formatFileName(String fileName) {
         if(fileName.length() > 8){
             fileName = fileName.substring(0, 8);
@@ -293,5 +297,89 @@ public class FileSystemImplementation implements FileSystem {
             } while(fileName.length() < 8);
         }
         return fileName;
+    }
+
+
+    /**
+     * continua bem errado
+     * @param fileName
+     * @param offset
+     * @param limit
+     * @return
+     */
+    public byte[] read2(String fileName, int offset, int limit) {
+        fileName = formatFileName(fileName);//formata o nome do arquivo
+        System.out.println("[FSI.read2] Reading file: " + fileName);
+        for(Archive archive : this.archives){//procura o arquivo
+            if(archive.getName().equals(fileName)){
+                System.out.println("[FSI.read2] Archive found: " + archive.getName());
+                if(offset > archive.getSize() || limit > archive.getSize()){//se o offset for maior que o tamanho do arquivo retorna null
+                    return null;
+                }
+                if(limit == -1){//se o limite for -1 o limite é o tamanho do arquivo
+                    limit = archive.getSize();
+                }
+
+                System.out.println("[FSI.read2]: passou das validações");
+
+                List<Integer> blocos = new ArrayList<>();//lista de blocos
+                int current = archive.getPos();//bloco atual
+                do{
+                    blocos.add(current);//adiciona o bloco na lista de blocos
+                    System.out.println("[FSI.read2] Reading block: " + current);
+                    current = FAT.get(current);//pega o proximo bloco
+                } while(current != 0);//repete até acabar os blocos
+
+                for(int i = 0; i < 10; i++){
+                    System.out.print(FAT.get(i) + " ");
+                }
+
+                System.out.println("\n[FSI.read2] Blocks: " + blocos);
+
+                int initialBlock = (int) Math.floor(offset / Disk.BLOCk_SIZE);//bloco inicial
+                int initialOffset = (int) Math.floor(offset % Disk.BLOCk_SIZE);//resto do bloco inicial
+
+                System.out.println("[FSI.read2] Initial block: " + initialBlock);
+                System.out.println("[FSI.read2] Initial offset: " + initialOffset);
+
+                int finalBlock = (int) Math.floor(limit / Disk.BLOCk_SIZE);//bloco final
+                int finalOffset = (int) Math.floor(limit % Disk.BLOCk_SIZE);//resto do bloco final
+
+                System.out.println("[FSI.read2] Final block: " + finalBlock);
+                System.out.println("[FSI.read2] Final offset: " + finalOffset);
+
+                byte[] arquivo = new byte[limit - offset];//cria um array de bytes com o tamanho total
+
+                int pos = 0;//posição no array de bytes
+                
+                if(initialBlock == finalBlock){//se o bloco inicial for igual ao bloco final
+                    byte[] parteArchive = disk.read(initialBlock);//lê o bloco
+                    System.arraycopy(parteArchive, initialOffset, arquivo, 0, finalOffset - initialOffset);//copia o bloco para o array de bytes
+                    return arquivo;
+                }
+                
+                for(int bloco: blocos){
+                    if(bloco >= initialBlock && bloco <= finalBlock){//se o bloco estiver entre o bloco inicial e o bloco final
+                        byte[] parteArchive = disk.read(bloco);//lê o bloco
+                        if(bloco == initialBlock){//se o bloco for o bloco inicial
+                            if(bloco == finalBlock){//se o bloco for o bloco final
+                                System.arraycopy(parteArchive, initialOffset, arquivo, 0, (Disk.BLOCk_SIZE - initialOffset) - finalOffset);//copia o bloco para o array de bytes
+                                break;
+                            }
+                            System.arraycopy(parteArchive, initialOffset, arquivo, 0, Disk.BLOCk_SIZE - initialOffset);//copia o bloco para o array de bytes
+                            pos += Disk.BLOCk_SIZE - initialOffset;//atualiza a posição
+                        } else if(bloco == finalBlock){//se o bloco for o bloco final
+                            System.arraycopy(parteArchive, 0, arquivo, 0, Disk.BLOCk_SIZE - finalOffset);//copia o bloco para o array de bytes
+                        } else {
+                            System.arraycopy(parteArchive, 0, arquivo, pos, parteArchive.length);//copia o bloco para o array de bytes
+                            pos += Disk.BLOCk_SIZE;//atualiza a posição
+                        }
+                    }
+                }
+
+                return arquivo;
+            }
+        }
+        return null;
     }
 }
