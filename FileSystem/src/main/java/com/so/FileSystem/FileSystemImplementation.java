@@ -385,4 +385,20 @@ public class FileSystemImplementation implements FileSystem {
         }
         return null;
     }
+
+
+    public static void main(String[] args) {
+
+        FileSystemImplementation fileSystem = new FileSystemImplementation();
+
+        fileSystem.remove("teste");
+        
+        fileSystem.create("teste", "a".repeat((Disk.BLOCk_SIZE * 2) + 100).getBytes());
+
+        fileSystem.append("teste", "b".repeat(100).getBytes());
+
+        byte[] data = fileSystem.read2("teste", 0, -1);
+
+        System.out.println(new String(data));
+    }
 }
