@@ -114,6 +114,8 @@ public class FileSystemImplementation implements FileSystem {
                     nextBlock = FAT.get(nextBlock);
                 } while(FAT.get(nextBlock) > 1);
 
+                System.out.println("[FSI.append] Current block: " + currentBlock);
+                
                 int lastLength = archive.getSize() % Disk.BLOCk_SIZE;//tamanho do ultimo bloco
                 byte[] lastBlock = disk.read(currentBlock);//lê o ultimo bloco
                 byte[] newBlock = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
@@ -152,7 +154,7 @@ public class FileSystemImplementation implements FileSystem {
                         }
             
                         FAT.set(current, nextBlock);//atualiza o bloco atual com o valor do proximo bloco
-                    } while(length > 0);//repete até acabar gravar tudo
+                    } while(length >= 0);//repete até acabar gravar tudo
                 }
                 archive.setSize(archive.getSize() + data.length);//atualiza o tamanho do arquivo
                 updateFat();//atualiza a FAT
@@ -331,7 +333,7 @@ public class FileSystemImplementation implements FileSystem {
                     blocos.add(current);//adiciona o bloco na lista de blocos
                     System.out.println("[FSI.read2] Reading block: " + current);
                     current = FAT.get(current);//pega o proximo bloco
-                } while(current != 0);//repete até acabar os blocos
+                } while(current > 1);//repete até acabar os blocos
 
                 for(int i = 0; i < 10; i++){
                     System.out.print(FAT.get(i) + " ");
@@ -361,18 +363,15 @@ public class FileSystemImplementation implements FileSystem {
                     return arquivo;
                 }
                 
-                for(int bloco: blocos){
+                for(int bloco: blocos){//TODO for estranho, acho q da pra ser um while pegando da FAT msm
                     if(bloco >= initialBlock && bloco <= finalBlock){//se o bloco estiver entre o bloco inicial e o bloco final
                         byte[] parteArchive = disk.read(bloco);//lê o bloco
                         if(bloco == initialBlock){//se o bloco for o bloco inicial
-                            if(bloco == finalBlock){//se o bloco for o bloco final
-                                System.arraycopy(parteArchive, initialOffset, arquivo, 0, (Disk.BLOCk_SIZE - initialOffset) - finalOffset);//copia o bloco para o array de bytes
-                                break;
-                            }
-                            System.arraycopy(parteArchive, initialOffset, arquivo, 0, Disk.BLOCk_SIZE - initialOffset);//copia o bloco para o array de bytes
+                            System.arraycopy(parteArchive, initialOffset, arquivo, initialOffset, Disk.BLOCk_SIZE - initialOffset);//copia o bloco para o array de bytes
                             pos += Disk.BLOCk_SIZE - initialOffset;//atualiza a posição
                         } else if(bloco == finalBlock){//se o bloco for o bloco final
-                            System.arraycopy(parteArchive, 0, arquivo, 0, Disk.BLOCk_SIZE - finalOffset);//copia o bloco para o array de bytes
+                            System.arraycopy(parteArchive, 0, arquivo, pos, Disk.BLOCk_SIZE - finalOffset);//copia o bloco para o array de bytes
+                            break;
                         } else {
                             System.arraycopy(parteArchive, 0, arquivo, pos, parteArchive.length);//copia o bloco para o array de bytes
                             pos += Disk.BLOCk_SIZE;//atualiza a posição
