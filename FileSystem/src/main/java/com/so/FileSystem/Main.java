@@ -5,8 +5,8 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) {
 
-        String fileName = "pitch";
-        String fileExt = "mp4";
+        String fileName = "pdf";
+        String fileExt = "pdf";
 
         FileSystemImplementation fileSystem = new FileSystemImplementation();
         
