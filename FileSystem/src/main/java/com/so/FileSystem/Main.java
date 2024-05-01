@@ -5,8 +5,8 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) {
 
-        String fileName = "pdf";
-        String fileExt = "pdf";
+        String fileName = "pitch";
+        String fileExt = "mp4";
 
         FileSystemImplementation fileSystem = new FileSystemImplementation();
         
@@ -25,7 +25,7 @@ public class Main {
 
         //fileSystem.create(fileName, data);
 
-        //fileSystem.append(fileName, data);
+        fileSystem.append(fileName, data);
 
         System.out.println("reading file...");
         byte[] dataRead = fileSystem.read2(fileName, 0, -1);

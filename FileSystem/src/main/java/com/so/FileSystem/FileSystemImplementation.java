@@ -353,7 +353,7 @@ public class FileSystemImplementation implements FileSystem {
                 System.out.println("[FSI.read2] Final block: " + finalBlock);
                 System.out.println("[FSI.read2] Final offset: " + finalOffset);
 
-                byte[] arquivo = new byte[limit - offset];//cria um array de bytes com o tamanho total
+                byte[] arquivo = new byte[limit - offset + 1];//cria um array de bytes com o tamanho total
 
                 int pos = 0;//posição no array de bytes
                 
@@ -362,8 +362,26 @@ public class FileSystemImplementation implements FileSystem {
                     System.arraycopy(parteArchive, initialOffset, arquivo, 0, finalOffset - initialOffset);//copia o bloco para o array de bytes
                     return arquivo;
                 }
-                
-                for(int bloco: blocos){//TODO for estranho, acho q da pra ser um while pegando da FAT msm
+                int bloco = initialBlock;
+                do{
+                    byte[] parteArchive = disk.read(bloco);//lê o bloco
+                    if(bloco == initialBlock){//se o bloco for o bloco inicial
+                        System.arraycopy(parteArchive, initialOffset, arquivo, initialOffset, Disk.BLOCk_SIZE - initialOffset);//copia o bloco para o array de bytes
+                        pos += Disk.BLOCk_SIZE - initialOffset;//atualiza a posição
+                    } else if(bloco == finalBlock){//se o bloco for o bloco final
+                        System.arraycopy(parteArchive, 0, arquivo, pos, Disk.BLOCk_SIZE - finalOffset);//copia o bloco para o array de bytes
+                        break;
+                    } else {
+                        System.arraycopy(parteArchive, 0, arquivo, pos, parteArchive.length);//copia o bloco para o array de bytes
+                        pos += Disk.BLOCk_SIZE;//atualiza a posição
+                    }
+                    bloco = FAT.get(bloco);//pega o proximo bloco
+                } while (bloco != finalBlock);//repete até o bloco ser igual ao bloco final
+
+                return arquivo;
+
+
+                /*for(int bloco: blocos){//TODO for estranho, acho q da pra ser um while pegando da FAT msm
                     if(bloco >= initialBlock && bloco <= finalBlock){//se o bloco estiver entre o bloco inicial e o bloco final
                         byte[] parteArchive = disk.read(bloco);//lê o bloco
                         if(bloco == initialBlock){//se o bloco for o bloco inicial
@@ -379,7 +397,7 @@ public class FileSystemImplementation implements FileSystem {
                     }
                 }
 
-                return arquivo;
+                return arquivo;*/
             }
         }
         return null;
