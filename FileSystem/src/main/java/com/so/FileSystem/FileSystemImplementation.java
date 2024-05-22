@@ -117,6 +117,10 @@ public class FileSystemImplementation implements FileSystem {
                 
                 int lastLength = archive.getSize() % Disk.BLOCk_SIZE;//tamanho do ultimo bloco
 
+                currentBlock = nextBlock;//salva o bloco atual
+
+                System.out.println("[FSI.append] Last block length: " + lastLength);
+
                 byte[] lastBlock = disk.read(currentBlock);//lê o ultimo bloco
                 byte[] newBlock = new byte[Disk.BLOCk_SIZE];//cria um array de bytes com o tamanho de um bloco
                 System.arraycopy(lastBlock, 0, newBlock, 0, lastLength);//copia o ultimo bloco para o novo bloco

@@ -5,8 +5,8 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) {
 
-        String fileName = "pdf";
-        String fileExt = "pdf";
+        String fileName = "txtGrande";
+        String fileExt = "txt";
 
         FileSystemImplementation fileSystem = new FileSystemImplementation();
         
@@ -23,7 +23,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        //fileSystem.create(fileName, data);
+        fileSystem.create(fileName, data);
 
         fileSystem.append(fileName, data);
 
