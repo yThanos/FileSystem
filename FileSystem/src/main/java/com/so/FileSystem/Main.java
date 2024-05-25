@@ -5,14 +5,14 @@ import java.io.*;
 import javax.swing.JFileChooser;
 
 public class Main {
-    public static void main2(String[] args) {
+    public static void main(String[] args) {
 
         String fileName = "txtGrande";
         String fileExt = "txt";
 
         FileSystemImplementation fileSystem = new FileSystemImplementation();
         
-        //fileSystem.remove(fileName);
+        fileSystem.remove(fileName);
 
         System.out.println("[MAIN] freespace: "+fileSystem.freeSpace());
 
@@ -25,7 +25,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        //fileSystem.create(fileName, data);
+        fileSystem.create(fileName, data);
 
         fileSystem.append(fileName, data);
 
@@ -65,7 +65,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         File file = chooseFile();
 
         byte[] data = new byte[(int)file.length()];
