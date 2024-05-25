@@ -1,4 +1,4 @@
-package com.so.FileSystem;
+package com.so.filesystem;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;

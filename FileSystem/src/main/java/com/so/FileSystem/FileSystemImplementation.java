@@ -1,4 +1,4 @@
-package com.so.FileSystem;
+package com.so.filesystem;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.so.FileSystem.test;
+package com.so.filesystem.test;
 
 import javax.swing.*;
 
-import com.so.FileSystem.Archive;
+import com.so.filesystem.Archive;
 
 import java.awt.*;
 import java.awt.event.ActionListener;

@@ -1,4 +1,4 @@
-package com.so.FileSystem;
+package com.so.filesystem;
 
 public interface FileSystem {
     /**
