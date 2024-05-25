@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c98d0861-abcc-46dc-bc0f-120ae2cf62c4" name="Changes" comment="" />
+    <list default="true" id="c98d0861-abcc-46dc-bc0f-120ae2cf62c4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FileSystem/src/main/java/com/so/FileSystem/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/FileSystem/src/main/java/com/so/FileSystem/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txtGrandeCopy.txt" beforeDir="false" afterPath="$PROJECT_DIR$/txtGrandeCopy.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +17,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2gpcv1WXhARyVl8CAkS3ZQln7Ff" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -27,11 +31,18 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/vfr20/Downloads/FileSystem",
+    "last_opened_file_path": "C:/Users/vfr20/Downloads/FileSystem/FileSystem",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-17.0.9-corretto-17.0.9-3183f394aec4-8f899f12" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -41,6 +52,7 @@
       <option name="presentableId" value="Default" />
       <updated>1716398186422</updated>
       <workItem from="1716398187530" duration="35000" />
+      <workItem from="1716400211440" duration="182000" />
     </task>
     <servers />
   </component>
