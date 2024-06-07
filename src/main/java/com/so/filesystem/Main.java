@@ -1,12 +1,22 @@
 package com.so.filesystem;
 
+import javax.swing.SwingUtilities;
+
+import com.so.filesystem.test.MainFrame;
+
 public class Main {
 
-    //Para testar o uso do limit e offset no read não consegui fazer isso no MainFrame
-    public static void main(String[] args) {
-        FileSystemImplementation fsi = new FileSystemImplementation();
-        String filename = "speech.txt";
+    private static final FileSystemImplementation fsi = new FileSystemImplementation();;
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new MainFrame(fsi).setVisible(true));
+        
+        // para testar o uso do limit e offset no read basta descomentar a linha abaixo
+        // testeLimitOffset();
+    }
+
+    private static void testeLimitOffset() {
+        String filename = "speech.txt";
         fsi.remove(filename);
 
         String texto = """

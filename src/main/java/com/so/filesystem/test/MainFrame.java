@@ -1,6 +1,7 @@
 package com.so.filesystem.test;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.so.filesystem.model.Archive;
 import com.so.filesystem.FileSystemImplementation;
@@ -78,7 +79,7 @@ public class MainFrame extends JFrame {
             ArchivePanel archivePanel = new ArchivePanel(archive,
                 e -> {
                     byte[] data = fsi.read(archive.getName()+archive.getExt(), 0, -1);
-                    saveFile(data, archive.getName()+archive.getExt());
+                    saveFile(data, archive.getName()+"."+archive.getExt());
                     JOptionPane.showMessageDialog(MainFrame.this, "Arquivo salvo: " + archive.getName()+archive.getExt());
                 },
                 e -> {
@@ -110,11 +111,6 @@ public class MainFrame extends JFrame {
         listPanel.repaint();
     }
 
-    public static void main(String[] args) {
-        FileSystemImplementation fsi = new FileSystemImplementation();
-        SwingUtilities.invokeLater(() -> new MainFrame(fsi).setVisible(true));
-    }
-
     public static File chooseFile(){
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Selecione 1 arquivo");
@@ -127,6 +123,8 @@ public class MainFrame extends JFrame {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Salvar arquivo");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setSelectedFile(new File(filename));
+        fileChooser.setFileFilter(new FileNameExtensionFilter(filename.split("\\.")[1], filename.split("\\.")[1]));
         fileChooser.setName(filename);
         fileChooser.showSaveDialog(null);
         File file = fileChooser.getSelectedFile();
