@@ -5,31 +5,50 @@ import java.util.List;
 import java.util.Random;
 
 public class TesteProdutor {
-    private static final int MAX_LENGTH = 30;
-    private List<Integer> buffer = new ArrayList<>(MAX_LENGTH);
-    public TesteProdutor(){
-        new Thread(new Produtor()).start();
+    private final int MAX_BUFFER = 30;
+    private final List<Integer> buffer = new ArrayList<>(MAX_BUFFER);
+
+    public TesteProdutor() {
         new Thread(new Consumidor()).start();
+        new Thread(new Produtor()).start();
     }
 
-    public class Produtor implements Runnable{
+    public class Produtor implements Runnable {
+
         private Random rnd = new Random();
         @Override
         public void run() {
-            while (true){
-                int i = rnd.nextInt();
-                buffer.add(i);
-                System.out.println("[PRODUTOR] Produziu o N: " + i);
+            while (true) {
+                synchronized (buffer) {
+                    if (buffer.size() == MAX_BUFFER) {
+                        System.out.println("[PRODUTOR] Vai dormir...");
+                        try { buffer.wait(); } catch (InterruptedException e) { }
+                        System.out.println("[PRODUTOR] Acordou...");
+                    }
+                    int i = rnd.nextInt();
+                    System.out.println("[PRODUTOR] Produziu " + i + ".");
+                    buffer.add(i);
+                    buffer.notify();
+                }
             }
         }
     }
-    public class Consumidor implements Runnable{
 
+    public class Consumidor implements Runnable {
+;
         @Override
         public void run() {
-            while (true){
-                int i = buffer.remove(0);
-                System.out.println("[CONSUMIDOR] Consumiu o N: " + i);
+            while (true) {
+                synchronized (buffer) {
+                    if(buffer.isEmpty()) {
+                        System.out.println("[CONSUMIDOR] Vai dormir...");
+                        try { buffer.wait(); } catch (InterruptedException e) { }
+                        System.out.println("[CONSUMIDOR] Acordou...");
+                    } 
+                        int i = buffer.remove(0);
+                        System.out.println("[CONSUMIDOR] Consumiu " + i + ".");
+                        buffer.notify();
+                }
             }
         }
     }
