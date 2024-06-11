@@ -11,7 +11,7 @@ import java.util.List;
 /**
  *
  * @author
- * User: Fraporti
+ * User: Fraporti & Magro
  * Date: 26/05/2024
  * Time: 11:40
  *
@@ -71,7 +71,7 @@ public class FileSystemImplementation implements FileSystem {
         String extension = formatExtension(fileName);
         fileName = formatFileName(fileName);//formata o nome do arquivo
         for(Archive archive : this.archives){//checa se ja tem um arquivo com esse nome, talvez de pra simplente sobreescrever
-            if(archive.getName().equals(fileName) && archive.getExt().equals(extension)){
+            if(archive.getName().equals(fileName)){
                 throw new IllegalArgumentException("[FSI.create] File already exists");
             }
         }
@@ -209,7 +209,7 @@ public class FileSystemImplementation implements FileSystem {
                     nextBlock = FAT.get(current);//pega o proximo bloco
                     FAT.set(current, 0);//remove o bloco atual
                     if(nextBlock == 1){//se o proximo bloco for 1 acabou
-                        FAT.set(current, 0);//remove o bloco atual
+                        FAT.set(nextBlock, 0);//remove o proximo atual
                     }
                 } while(nextBlock > 1);//se o proximo bloco for 1 acabou
                 archives.remove(archive);//Como remove o arquivo do bloco 0?, n sei a posição exata do arquivo no bloco 0, ou sei?, pelo nome?
@@ -218,7 +218,6 @@ public class FileSystemImplementation implements FileSystem {
                 return;
             }
         }
-        
         System.out.println("[FSI.remove] File not found");
     }
 

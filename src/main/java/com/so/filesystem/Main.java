@@ -12,7 +12,7 @@ public class Main {
         SwingUtilities.invokeLater(() -> new MainFrame(fsi).setVisible(true));
         
         // para testar o uso do limit e offset no read basta descomentar a linha abaixo
-        // testeLimitOffset();
+        testeLimitOffset();
     }
 
     private static void testeLimitOffset() {
