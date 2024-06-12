@@ -40,7 +40,7 @@ public class TesteProdutor {
         public void run() {
             while (true) {
                 synchronized (buffer) {
-                    if(buffer.isEmpty()) {
+                    if(buffer.size() == 0) {
                         System.out.println("[CONSUMIDOR] Vai dormir...");
                         try { buffer.wait(); } catch (InterruptedException e) { }
                         System.out.println("[CONSUMIDOR] Acordou...");

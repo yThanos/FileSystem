@@ -6,12 +6,10 @@ import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
-public class TesteAula{
+public class TesteAula {
     private Integer iDeTodos = 0;
-    //private final Teste monitor = new Teste();
-    private final Semaphore semaforo = new Semaphore(1);
+    private final Teste monitor = new Teste();
 
     private class InnerClassA implements Runnable {
         private int i = 0;
@@ -20,10 +18,10 @@ public class TesteAula{
         @SneakyThrows
         public void run() {
             while (i < 10000000L) {
-                semaforo.acquire();
-                TesteAula.this.iDeTodos++;
-                semaforo.release();
                 i++;
+                synchronized (monitor){
+                    TesteAula.this.iDeTodos++;
+                }
             }
         }
     }
@@ -35,10 +33,10 @@ public class TesteAula{
         @SneakyThrows
         public void run() {
             while (i < 10000000L) {
-                semaforo.acquire();
-                TesteAula.this.iDeTodos++;
-                semaforo.release();
                 i++;
+                synchronized (monitor){
+                    TesteAula.this.iDeTodos++;
+                }
             }
         }
     }
